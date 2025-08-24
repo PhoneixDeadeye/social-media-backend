@@ -1,0 +1,75 @@
+{
+	"name": "social-media-backend",
+	"version": "1.0.0",
+	"description": "A comprehensive Node.js backend API for a social media platform with authentication, posts, comments, likes, follows, GraphQL, and scheduled posting",
+	"main": "src/app.js",
+	"engines": {
+		"node": ">=14.0.0",
+		"npm": ">=6.0.0"
+	},
+	"scripts": {
+		"start": "node src/app.js",
+		"dev": "nodemon src/app.js",
+		"start:verbose": "LOG_LEVEL=verbose node src/app.js",
+		"start:critical": "LOG_LEVEL=critical node src/app.js",
+		"setup:db": "node scripts/setup-database.js",
+		"test": "set NODE_ENV=test && jest",
+		"test:watch": "set NODE_ENV=test && jest --watch",
+		"test:coverage": "set NODE_ENV=test && jest --coverage"
+	},
+	"keywords": [
+		"social-media",
+		"api",
+		"nodejs",
+		"postgresql",
+		"graphql",
+		"jwt",
+		"express",
+		"redis",
+		"bull-queue",
+		"scheduled-posts",
+		"authentication",
+		"rest-api"
+	],
+	"author": "Social Media Backend Team",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/your-username/social-media-backend.git"
+	},
+	"bugs": {
+		"url": "https://github.com/your-username/social-media-backend/issues"
+	},
+	"homepage": "https://github.com/your-username/social-media-backend#readme",
+	"dependencies": {
+		"@apollo/server": "^5.0.0",
+		"@graphql-tools/schema": "^10.0.25",
+		"apollo-server-express": "^3.13.0",
+		"bcryptjs": "^2.4.3",
+		"bull": "^4.16.5",
+		"cors": "^2.8.5",
+		"dotenv": "^16.1.4",
+		"express": "^4.18.2",
+		"graphql": "^16.11.0",
+		"helmet": "^7.0.0",
+		"joi": "^17.9.2",
+		"jsonwebtoken": "^9.0.0",
+		"multer": "^1.4.5-lts.1",
+		"pg": "^8.11.0",
+		"redis": "^5.8.2",
+		"supertest": "^7.1.4"
+	},
+	"devDependencies": {
+		"jest": "^30.0.5",
+		"nodemon": "^2.0.22"
+	},
+	"jest": {
+		"testEnvironment": "node",
+		"setupFilesAfterEnv": [
+			"<rootDir>/tests/setup.js"
+		],
+		"testTimeout": 30000,
+		"forceExit": true,
+		"detectOpenHandles": true
+	}
+}
