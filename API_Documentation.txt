@@ -1,0 +1,266 @@
+# Social Media Backend API Documentation
+
+## Database Schema (schema.sql)
+
+### Tables:
+1. **`users`**:
+   - Stores user information like `username`, `email`, `password_hash`, etc.
+   - Includes timestamps for creation and updates.
+   - Supports soft deletion with `is_deleted`.
+
+2. **`posts`**:
+   - Stores posts created by users.
+   - Includes fields for `content`, `media_url`, and flags like `comments_enabled` and `is_deleted`.
+   - References the `users` table for the `user_id`.
+
+3. **`comments`**:
+   - Stores comments on posts.
+   - References `posts` and `users` for `post_id` and `user_id`.
+   - Includes timestamps for creation and updates.
+
+4. **`likes`**:
+   - Tracks likes on posts.
+   - References `posts` and `users` for `post_id` and `user_id`.
+   - Ensures uniqueness of `post_id` and `user_id` pairs.
+
+5. **`follow`**:
+   - Tracks follower-followed relationships between users.
+   - References `users` for `follower_id` and `followed_id`.
+   - Ensures uniqueness of `follower_id` and `followed_id` pairs.
+
+### Indexes:
+- Indexes are created for foreign keys in `comments`, `likes`, and `follow` tables to improve query performance.
+
+### Triggers:
+- A trigger function `update_updated_at_column` is defined to automatically update the `updated_at` column whenever a row is updated in the `users` or `posts` tables.
+
+---
+
+## API Endpoints
+
+### Authentication
+- **`POST /api/auth/register`** - Register a new user
+- **`POST /api/auth/login`** - User login
+
+### Posts
+- **`GET /api/posts`** - Get all posts (public)
+- **`GET /api/posts/search`** - Search posts (public)
+- **`POST /api/posts`** - Create a post (auth required)
+- **`GET /api/posts/my`** - Get user's posts (auth required)
+- **`GET /api/posts/feed`** - Get user's feed (auth required)
+- **`PUT /api/posts/:id`** - Update a post (auth required)
+- **`DELETE /api/posts/:id`** - Delete a post (auth required)
+
+### Comments
+- **`GET /api/comments/:postId`** - Get comments for a post
+- **`POST /api/comments`** - Create a comment (auth required)
+- **`PUT /api/comments/:id`** - Update a comment (auth required)
+- **`DELETE /api/comments/:id`** - Delete a comment (auth required)
+
+### Likes
+- **`GET /api/likes/:postId`** - Get likes for a post
+- **`POST /api/likes`** - Like a post (auth required)
+- **`DELETE /api/likes/:postId`** - Unlike a post (auth required)
+
+### Users & Following
+- **`GET /api/users/search`** - Search for users
+- **`GET /api/users/following`** - Get the following list (auth required)
+- **`GET /api/users/followers`** - Get the followers list (auth required)
+- **`GET /api/users/stats`** - Get follow statistics (auth required)
+- **`POST /api/users/follow`** - Follow a user (auth required)
+- **`DELETE /api/users/unfollow/:userId`** - Unfollow a user (auth required)
+
+### Scheduled Posts
+- **`POST /api/posts/schedule`** - Schedule a post (auth required)
+- **`GET /api/posts/scheduled`** - Get scheduled posts (auth required)
+- **`DELETE /api/posts/scheduled/:jobId`** - Cancel a scheduled post (auth required)
+- **`GET /api/admin/queue/stats`** - Get queue statistics (auth required)
+
+### Health & System
+- **`GET /health`** - System health check
+- **`POST /graphql`** - GraphQL endpoint
+
+---
+
+## GraphQL Schema
+
+### Available Queries
+```graphql
+type Query {
+  posts(limit: Int, offset: Int): [Post!]!
+  users(search: String, limit: Int, offset: Int): [User!]!
+  health: HealthStatus!
+  me: User
+}
+```
+
+### Available Mutations
+```graphql
+type Mutation {
+  createPost(content: String!, mediaUrl: String, commentsEnabled: Boolean): Post!
+  schedulePost(content: String!, scheduledTime: String!, mediaUrl: String): ScheduleResponse!
+}
+```
+
+---
+
+## Request/Response Samples
+
+### Authentication
+
+#### `POST /api/auth/register`
+**Request:**
+```json
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "securepassword",
+  "fullName": "John Doe"
+}
+```
+**Response:**
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "fullName": "John Doe",
+    "createdAt": "2025-08-24T12:00:00Z"
+  }
+}
+```
+
+#### `POST /api/auth/login`
+**Request:**
+```json
+{
+  "email": "john@example.com",
+  "password": "securepassword"
+}
+```
+**Response:**
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "fullName": "John Doe"
+  }
+}
+```
+
+### Posts
+
+#### `GET /api/posts`
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "userId": 1,
+    "content": "This is my first post!",
+    "mediaUrl": null,
+    "commentsEnabled": true,
+    "createdAt": "2025-08-24T12:00:00Z",
+    "updatedAt": "2025-08-24T12:00:00Z"
+  }
+]
+```
+
+#### `POST /api/posts`
+**Request:**
+```json
+{
+  "content": "This is a new post!",
+  "mediaUrl": "https://example.com/image.jpg",
+  "commentsEnabled": true
+}
+```
+**Response:**
+```json
+{
+  "message": "Post created successfully",
+  "post": {
+    "id": 2,
+    "userId": 1,
+    "content": "This is a new post!",
+    "mediaUrl": "https://example.com/image.jpg",
+    "commentsEnabled": true,
+    "createdAt": "2025-08-24T12:30:00Z",
+    "updatedAt": "2025-08-24T12:30:00Z"
+  }
+}
+```
+
+### Comments
+
+#### `POST /api/comments`
+**Request:**
+```json
+{
+  "postId": 1,
+  "content": "Great post!"
+}
+```
+**Response:**
+```json
+{
+  "message": "Comment added successfully",
+  "comment": {
+    "id": 1,
+    "postId": 1,
+    "userId": 1,
+    "content": "Great post!",
+    "createdAt": "2025-08-24T12:45:00Z",
+    "updatedAt": "2025-08-24T12:45:00Z"
+  }
+}
+```
+
+### Likes
+
+#### `POST /api/likes`
+**Request:**
+```json
+{
+  "postId": 1
+}
+```
+**Response:**
+```json
+{
+  "message": "Post liked successfully",
+  "like": {
+    "id": 1,
+    "postId": 1,
+    "userId": 1,
+    "createdAt": "2025-08-24T12:50:00Z"
+  }
+}
+```
+
+#### `DELETE /api/likes/:postId`
+**Response:**
+```json
+{
+  "message": "Post unliked successfully"
+}
+```
+
+### Health
+
+#### `GET /health`
+**Response:**
+```json
+{
+  "status": "ok",
+  "uptime": 3600,
+  "database": "connected",
+  "redis": "connected"
+}
+```
